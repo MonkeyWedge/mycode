@@ -1,0 +1,38 @@
+#!/usr/bin/python3
+
+##standard library imports
+import os
+import warnings
+
+## 3rd party import
+import paramiko
+
+#excel data
+excellist = [{'un': 'bender', 'ip': '10.10.2.3'}, {'un': 'fry', 'ip': '10.10.2.4'}, {'un': 'zoidberg', 'ip': '10.10.2.5'}]
+
+#
+sshsession = paramiko.SSHClient()
+#filter the paramiko warning
+warnings.filterwarnings(action='ignore',module='.*paramiko.*')
+
+##go grab an SSH key
+mykey = paramiko.RSAKey.from_private_key_file("/home/student/.ssh/id_rsa")
+
+## SKpis the warning that says "this fingerprint looks new" (authorized_hosts)
+sshsession.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+for fc in excellist:
+    mycommand = 'ls /var'
+    ##"press the connect key in the putty session
+    print('username: ' + fc['un'] + '\nip: '  + fc['ip'] + '\n' + mycommand)
+    sshsession.connect(hostname=fc['ip'], username=fc['un'], pkey=mykey)
+
+    ##capture 3 responses fro the command below
+    ssh_in, ssh_out, ssh_err = sshsession.exec_command(mycommand)
+
+    ##display the results of our command
+    print(ssh_out.read().decode('utf-8'))
+
+    ## ssh is not a barn
+    sshsession.close()
+
